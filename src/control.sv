@@ -124,10 +124,16 @@ always_comb begin
         // LW, SW
         2'b00 : alu_control = 4'b0000;
         // R-Types & I-Type ALU
+        // R-Types & I-Type ALU
         2'b10 : begin
             case (func3)
-                // ADD / ADDI
-                3'b000 : alu_control = 4'b0000;
+                // ADD / SUB / ADDI
+                3'b000 : begin
+                    if (op == 7'b0110011) // R-Type: check func7[5] (SW[11])
+                        alu_control = func7[5] ? 4'b0001 : 4'b0000;
+                    else                  // I-Type (ADDI): always ADD
+                        alu_control = 4'b0000;
+                end
                 // AND / ANDI
                 3'b111 : alu_control = 4'b0010;
                 // OR / ORI
@@ -136,7 +142,7 @@ always_comb begin
                 3'b010 : alu_control = 4'b0101;
                 // SLTIU / SLTU
                 3'b011 : alu_control = 4'b0111;
-                // XORI / XOR (NEW!)
+                // XORI / XOR
                 3'b100 : alu_control = 4'b1000;
                 default: alu_control = 4'b1111;
             endcase
